@@ -23,7 +23,7 @@ struct AdBannerView: View {
     var body: some View {
         BannerAdView(
             adUnitID: "ca-app-pub-9404799280370656/8537932771",
-            adSize: currentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(UIScreen.main.bounds.width)
+            adSize: GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(UIScreen.main.bounds.width)
         )
     }
 }
