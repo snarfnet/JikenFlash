@@ -8,17 +8,17 @@ struct BannerAdView: UIViewRepresentable {
     func makeUIView(context: Context) -> BannerView {
         let bannerView = BannerView(adSize: adSize)
         bannerView.adUnitID = adUnitID
-        DispatchQueue.main.async {
-            if let windowScene = bannerView.window?.windowScene,
-               let rootVC = windowScene.keyWindow?.rootViewController {
-                bannerView.rootViewController = rootVC
-            }
-            bannerView.load(Request())
-        }
         return bannerView
     }
 
-    func updateUIView(_ uiView: BannerView, context: Context) {}
+    func updateUIView(_ uiView: BannerView, context: Context) {
+        guard uiView.rootViewController == nil else { return }
+        if let windowScene = uiView.window?.windowScene,
+           let rootVC = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+            uiView.rootViewController = rootVC
+            uiView.load(Request())
+        }
+    }
 }
 
 struct AdBannerView: View {
