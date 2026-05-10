@@ -8,11 +8,13 @@ struct BannerAdView: UIViewRepresentable {
     func makeUIView(context: Context) -> BannerView {
         let bannerView = BannerView(adSize: adSize)
         bannerView.adUnitID = adUnitID
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
-            bannerView.rootViewController = rootVC
+        DispatchQueue.main.async {
+            if let windowScene = bannerView.window?.windowScene,
+               let rootVC = windowScene.keyWindow?.rootViewController {
+                bannerView.rootViewController = rootVC
+            }
+            bannerView.load(Request())
         }
-        bannerView.load(Request())
         return bannerView
     }
 
@@ -21,10 +23,13 @@ struct BannerAdView: UIViewRepresentable {
 
 struct AdBannerView: View {
     var body: some View {
-        BannerAdView(
-            adUnitID: "ca-app-pub-9404799280370656/8537932771",
-            adSize: currentOrientationAnchoredAdaptiveBanner(width: UIScreen.main.bounds.width)
-        )
+        GeometryReader { geo in
+            BannerAdView(
+                adUnitID: "ca-app-pub-9404799280370656/8537932771",
+                adSize: currentOrientationAnchoredAdaptiveBanner(width: geo.size.width)
+            )
+        }
+        .frame(height: 54)
     }
 }
 
