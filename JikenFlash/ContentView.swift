@@ -29,7 +29,7 @@ struct ContentView: View {
             await tracking.requestBeforeAds()
             await newsService.fetchNews()
         }
-        .onChange(of: selectedCategory) { _, newValue in
+        .onChange(of: selectedCategory) { newValue in
             if newValue == .nearby {
                 locationManager.requestPermission()
                 locationManager.requestLocation()
