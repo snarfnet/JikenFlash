@@ -6,13 +6,13 @@ TEAM_ID = '83VGKGSQUH'
 
 project_path = File.expand_path("#{PROJECT_NAME}.xcodeproj", __dir__)
 project = Xcodeproj::Project.new(project_path)
-target = project.new_target(:application, PROJECT_NAME, :ios, '16.0')
+target = project.new_target(:application, PROJECT_NAME, :ios, '17.0')
 
 target.build_configurations.each do |config|
   config.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = BUNDLE_ID
   config.build_settings['DEVELOPMENT_TEAM'] = TEAM_ID
   config.build_settings['SWIFT_VERSION'] = '5.0'
-  config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+  config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
   config.build_settings['CODE_SIGN_STYLE'] = 'Automatic'
   config.build_settings['INFOPLIST_FILE'] = 'JikenFlash/Info.plist'
   config.build_settings['ASSETCATALOG_COMPILER_APPICON_NAME'] = 'AppIcon'
