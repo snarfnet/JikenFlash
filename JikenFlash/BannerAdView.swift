@@ -23,11 +23,7 @@ struct BannerAdView: UIViewRepresentable {
     func updateUIView(_ uiView: UIView, context: Context) {
         guard let bannerView = context.coordinator.bannerView,
               bannerView.rootViewController == nil else { return }
-        DispatchQueue.main.async {
-            guard let scene = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
-                .first(where: { $0.activationState == .foregroundActive }),
-                  let rootVC = scene.keyWindow?.rootViewController else { return }
+        if let rootVC = uiView.window?.rootViewController {
             bannerView.rootViewController = rootVC
             bannerView.load(Request())
         }
