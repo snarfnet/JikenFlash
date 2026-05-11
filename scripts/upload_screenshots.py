@@ -11,7 +11,7 @@ SCREENSHOT_DIR = Path(__file__).resolve().parent.parent / "AppStoreScreenshots"
 DISPLAY_TYPES = {
     ".": "APP_IPHONE_67",
     "iphone_65": "APP_IPHONE_65",
-    "ipad_129": "APP_IPAD_PRO_129",
+    "ipad_129": "APP_IPAD_PRO_3GEN_129",
 }
 
 
