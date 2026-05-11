@@ -13,8 +13,9 @@ struct BannerAdView: UIViewRepresentable {
 
     func updateUIView(_ uiView: BannerView, context: Context) {
         guard uiView.rootViewController == nil else { return }
-        if let windowScene = uiView.window?.windowScene,
-           let rootVC = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+        if let scene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene }).first,
+           let rootVC = scene.keyWindow?.rootViewController {
             uiView.rootViewController = rootVC
             uiView.load(Request())
         }
@@ -24,10 +25,12 @@ struct BannerAdView: UIViewRepresentable {
 struct AdBannerView: View {
     var body: some View {
         GeometryReader { geo in
-            BannerAdView(
-                adUnitID: "ca-app-pub-9404799280370656/8537932771",
-                adSize: currentOrientationAnchoredAdaptiveBanner(width: geo.size.width)
-            )
+            if geo.size.width > 0 {
+                BannerAdView(
+                    adUnitID: "ca-app-pub-9404799280370656/8537932771",
+                    adSize: currentOrientationAnchoredAdaptiveBanner(width: geo.size.width)
+                )
+            }
         }
         .frame(height: 54)
     }

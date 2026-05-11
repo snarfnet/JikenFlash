@@ -4,6 +4,7 @@ import SwiftUI
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        MobileAds.shared.start(completionHandler: nil)
         return true
     }
 }
@@ -38,6 +39,6 @@ final class TrackingConsentManager: ObservableObject {
     private func startAdsIfNeeded() {
         guard !didStartAds else { return }
         didStartAds = true
-        MobileAds.shared.start(completionHandler: nil)
+        // SDK already started in AppDelegate.didFinishLaunchingWithOptions
     }
 }
