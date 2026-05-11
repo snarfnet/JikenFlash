@@ -21,6 +21,8 @@ final class TrackingConsentManager: ObservableObject {
             return
         }
 
+        try? await Task.sleep(for: .seconds(1))
+
         if #available(iOS 14.5, *) {
             await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
                 ATTrackingManager.requestTrackingAuthorization { _ in
