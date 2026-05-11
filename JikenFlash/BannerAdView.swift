@@ -5,20 +5,38 @@ struct BannerAdView: UIViewRepresentable {
     let adUnitID: String
     let adSize: AdSize
 
-    func makeUIView(context: Context) -> BannerView {
+    func makeUIView(context: Context) -> UIView {
+        let container = UIView()
+        container.backgroundColor = .clear
         let bannerView = BannerView(adSize: adSize)
         bannerView.adUnitID = adUnitID
-        return bannerView
+        bannerView.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(bannerView)
+        NSLayoutConstraint.activate([
+            bannerView.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            bannerView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+        ])
+        context.coordinator.bannerView = bannerView
+        return container
     }
 
-    func updateUIView(_ uiView: BannerView, context: Context) {
-        guard uiView.rootViewController == nil else { return }
-        if let scene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene }).first,
-           let rootVC = scene.keyWindow?.rootViewController {
-            uiView.rootViewController = rootVC
-            uiView.load(Request())
+    func updateUIView(_ uiView: UIView, context: Context) {
+        guard let bannerView = context.coordinator.bannerView,
+              bannerView.rootViewController == nil else { return }
+        DispatchQueue.main.async {
+            guard let scene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first(where: { $0.activationState == .foregroundActive }),
+                  let rootVC = scene.keyWindow?.rootViewController else { return }
+            bannerView.rootViewController = rootVC
+            bannerView.load(Request())
         }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator {
+        var bannerView: BannerView?
     }
 }
 

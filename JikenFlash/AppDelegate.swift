@@ -4,7 +4,12 @@ import SwiftUI
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        MobileAds.shared.start(completionHandler: nil)
+        // Defer AdMob init to avoid crash on iPadOS 26
+        DispatchQueue.main.async {
+            MobileAds.shared.start { _ in
+                print("AdMob SDK initialized")
+            }
+        }
         return true
     }
 }
@@ -14,13 +19,9 @@ final class TrackingConsentManager: ObservableObject {
     static let shared = TrackingConsentManager()
 
     @Published private(set) var didResolveConsent = false
-    private var didStartAds = false
 
     func requestBeforeAds() async {
-        guard !didResolveConsent else {
-            startAdsIfNeeded()
-            return
-        }
+        guard !didResolveConsent else { return }
 
         try? await Task.sleep(for: .seconds(1))
 
@@ -33,12 +34,5 @@ final class TrackingConsentManager: ObservableObject {
         }
 
         didResolveConsent = true
-        startAdsIfNeeded()
-    }
-
-    private func startAdsIfNeeded() {
-        guard !didStartAds else { return }
-        didStartAds = true
-        // SDK already started in AppDelegate.didFinishLaunchingWithOptions
     }
 }
