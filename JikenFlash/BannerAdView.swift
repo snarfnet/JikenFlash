@@ -1,5 +1,6 @@
 import GoogleMobileAds
 import SwiftUI
+import UIKit
 
 struct BannerAdView: UIViewRepresentable {
     let adUnitID: String
@@ -23,7 +24,7 @@ struct BannerAdView: UIViewRepresentable {
     func updateUIView(_ uiView: UIView, context: Context) {
         guard let bannerView = context.coordinator.bannerView,
               bannerView.rootViewController == nil else { return }
-        if let rootVC = uiView.window?.rootViewController {
+        if let rootVC = UIApplication.shared.adRootViewController {
             bannerView.rootViewController = rootVC
             bannerView.load(Request())
         }
@@ -37,9 +38,11 @@ struct BannerAdView: UIViewRepresentable {
 }
 
 struct AdBannerView: View {
+    @ObservedObject private var adMobStartup = AdMobStartup.shared
+
     var body: some View {
         GeometryReader { geo in
-            if geo.size.width > 0 {
+            if adMobStartup.isReady, geo.size.width > 0 {
                 BannerAdView(
                     adUnitID: "ca-app-pub-9404799280370656/8537932771",
                     adSize: currentOrientationAnchoredAdaptiveBanner(width: geo.size.width)
@@ -51,10 +54,24 @@ struct AdBannerView: View {
 }
 
 struct LargeAdBannerView: View {
+    @ObservedObject private var adMobStartup = AdMobStartup.shared
+
     var body: some View {
-        BannerAdView(
-            adUnitID: "ca-app-pub-9404799280370656/8537932771",
-            adSize: AdSizeMediumRectangle
-        )
+        if adMobStartup.isReady {
+            BannerAdView(
+                adUnitID: "ca-app-pub-9404799280370656/8537932771",
+                adSize: AdSizeMediumRectangle
+            )
+        }
+    }
+}
+
+private extension UIApplication {
+    var adRootViewController: UIViewController? {
+        connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first { $0.isKeyWindow }?
+            .rootViewController
     }
 }

@@ -1,7 +1,7 @@
 import os
 import time
 
-from asc_api import api, find_app_id, get_or_create_version, get_localization_id
+from asc_api import api, find_app_id, get_localization_id, get_or_create_version
 
 APP_VERSION = os.environ.get("APP_VERSION", "1.1")
 BUILD_NUMBER = os.environ.get("BUILD_NUMBER", "")
@@ -11,6 +11,11 @@ REVIEW_CONTACT = {
     "contactEmail": "tokyonasu@yahoo.co.jp",
     "contactPhone": "+81 80-2368-9194",
 }
+REVIEW_NOTES = (
+    "起動時クラッシュを修正しました。Info.plistのAdMobアプリIDを有効なIDに更新し、"
+    "Google Mobile Ads SDKの開始をApp Tracking Transparency確認後に遅らせています。"
+    "広告は画面下部のバナー枠に表示されます。"
+)
 
 
 def wait_for_build(app_id):
@@ -25,7 +30,7 @@ def wait_for_build(app_id):
             print(f"  build {version}: {state}")
             if BUILD_NUMBER and version == str(BUILD_NUMBER) and state == "VALID":
                 return item["id"]
-            elif not BUILD_NUMBER and version and state == "VALID":
+            if not BUILD_NUMBER and version and state == "VALID":
                 return item["id"]
             if state == "VALID" and latest_valid_id is None:
                 latest_valid_id = item["id"]
@@ -67,7 +72,13 @@ def main():
             raise
 
     review_details = api("GET", f"/appStoreVersions/{version_id}/appStoreReviewDetail")
-    attrs = {**REVIEW_CONTACT, "demoAccountRequired": False, "demoAccountName": "", "demoAccountPassword": ""}
+    attrs = {
+        **REVIEW_CONTACT,
+        "demoAccountRequired": False,
+        "demoAccountName": "",
+        "demoAccountPassword": "",
+        "notes": REVIEW_NOTES,
+    }
     if review_details.get("data"):
         detail_id = review_details["data"]["id"]
         api("PATCH", f"/appStoreReviewDetails/{detail_id}", json={
@@ -93,7 +104,7 @@ def main():
             if "409" in str(e):
                 print("Build already linked to version, skipping")
                 break
-            elif attempt < 4:
+            if attempt < 4:
                 print(f"Build link attempt {attempt + 1} failed, retrying in 30s...")
                 time.sleep(30)
             else:
@@ -107,7 +118,7 @@ def main():
                     "type": "appStoreVersionLocalizations",
                     "id": loc_id,
                     "attributes": {
-                        "whatsNew": "UIの全面改善、iPad対応、ATTフロー追加、キーポイント抽出機能",
+                        "whatsNew": "起動時の安定性を改善し、広告表示まわりを調整しました。",
                     },
                 }
             })
@@ -118,7 +129,6 @@ def main():
             else:
                 raise
 
-    # Clean up stale review submissions
     canceled = False
     for state in ["READY_FOR_REVIEW", "COMPLETING", "UNRESOLVED_ISSUES"]:
         try:
