@@ -5,7 +5,7 @@ struct ContentView: View {
     @StateObject private var adManager = AdRemovalManager.shared
     @StateObject private var locationManager = LocationManager.shared
     @StateObject private var savedStore = SavedAlertStore()
-    @StateObject private var tracking = TrackingConsentManager.shared
+    @StateObject private var adMobStartup = AdMobStartup.shared
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedCategory: NewsCategory = .all
@@ -26,7 +26,6 @@ struct ContentView: View {
             SettingsView(adManager: adManager)
         }
         .task {
-            await tracking.requestBeforeAds()
             await newsService.fetchNews()
         }
         .onChange(of: selectedCategory) {
@@ -49,7 +48,7 @@ struct ContentView: View {
                         CategoryCarousel(selected: $selectedCategory)
                         SearchBar(text: $searchText)
 
-                        if !adManager.isAdFree && tracking.didResolveConsent {
+                        if !adManager.isAdFree && adMobStartup.isReady {
                             AdBannerView()
                                 .frame(height: 54)
                                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -101,7 +100,7 @@ struct ContentView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         SearchBar(text: $searchText)
-                        if !adManager.isAdFree && tracking.didResolveConsent {
+                        if !adManager.isAdFree && adMobStartup.isReady {
                             AdBannerView()
                                 .frame(height: 54)
                                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
