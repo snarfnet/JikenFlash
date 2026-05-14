@@ -10,7 +10,7 @@ struct JikenFlashApp: App {
             ContentView()
                 .onAppear {
                     Task {
-                        await adMobStartup.requestTrackingAndStartAds()
+                        await adMobStartup.startAdsAfterLaunch()
                     }
                 }
         }

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var newsService = NewsService()
-    @StateObject private var adManager = AdRemovalManager.shared
     @StateObject private var locationManager = LocationManager.shared
     @StateObject private var savedStore = SavedAlertStore()
     @StateObject private var adMobStartup = AdMobStartup.shared
@@ -23,7 +22,10 @@ struct ContentView: View {
         }
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showSettings) {
-            SettingsView(adManager: adManager)
+            SettingsView()
+        }
+        .sheet(item: $selectedItem) { item in
+            AlertDetailView(item: item, isSaved: savedStore.isSaved(item), onSave: { savedStore.toggle(item) })
         }
         .task {
             await newsService.fetchNews()
@@ -48,7 +50,7 @@ struct ContentView: View {
                         CategoryCarousel(selected: $selectedCategory)
                         SearchBar(text: $searchText)
 
-                        if !adManager.isAdFree && adMobStartup.isReady {
+                        if adMobStartup.isReady {
                             AdBannerView()
                                 .frame(height: 54)
                                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -75,17 +77,12 @@ struct ContentView: View {
                 .refreshable { await newsService.fetchNews(category: selectedCategory) }
             }
             .navigationBarHidden(true)
-            .sheet(item: $selectedItem) { item in
-                AlertDetailView(item: item, isSaved: savedStore.isSaved(item), onSave: { savedStore.toggle(item) })
-            }
         }
     }
 
     private var iPadLayout: some View {
         GeometryReader { proxy in
-            let isWide = proxy.size.width >= 980
-            let sidebarWidth: CGFloat = isWide ? 300 : 260
-            let listWidth: CGFloat? = isWide ? min(430, proxy.size.width * 0.36) : nil
+            let sidebarWidth: CGFloat = proxy.size.width >= 980 ? 280 : 240
 
             ZStack {
                 JFBackground()
@@ -94,11 +91,6 @@ struct ContentView: View {
                         .frame(width: sidebarWidth)
                     Divider().overlay(Color.white.opacity(0.08))
                     iPadList
-                        .frame(width: listWidth)
-                    if isWide {
-                        Divider().overlay(Color.white.opacity(0.08))
-                        iPadDetail
-                    }
                 }
             }
         }
@@ -120,7 +112,7 @@ struct ContentView: View {
         ScrollView {
             VStack(spacing: 16) {
                 SearchBar(text: $searchText)
-                if !adManager.isAdFree && adMobStartup.isReady {
+                if adMobStartup.isReady {
                     AdBannerView()
                         .frame(height: 54)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -138,6 +130,8 @@ struct ContentView: View {
                 }
             }
             .padding(.vertical, 18)
+            .frame(maxWidth: 680)
+            .frame(maxWidth: .infinity)
         }
         .refreshable { await newsService.fetchNews(category: selectedCategory) }
     }

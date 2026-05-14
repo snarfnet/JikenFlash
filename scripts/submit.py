@@ -6,15 +6,17 @@ from asc_api import api, find_app_id, get_localization_id, get_or_create_version
 APP_VERSION = os.environ.get("APP_VERSION", "1.1")
 BUILD_NUMBER = os.environ.get("BUILD_NUMBER", "")
 REVIEW_CONTACT = {
-    "contactFirstName": "東京",
-    "contactLastName": "なす",
+    "contactFirstName": "Tokyo",
+    "contactLastName": "Nasu",
     "contactEmail": "tokyonasu@yahoo.co.jp",
     "contactPhone": "+81 80-2368-9194",
 }
 REVIEW_NOTES = (
-    "起動時クラッシュを修正しました。Info.plistのAdMobアプリIDを有効なIDに更新し、"
-    "Google Mobile Ads SDKの開始をApp Tracking Transparency確認後に遅らせています。"
-    "広告は画面下部のバナー枠に表示されます。"
+    "Guideline 4: The iPad layout has been simplified so the list has more room and the detail screen opens only after selecting an item. "
+    "The settings screen now contains only essential information.\n"
+    "Guideline 2.1(b): All in-app purchase code and purchase buttons have been removed. "
+    "This build is a free, ad-supported app and does not unlock paid features.\n"
+    "Ads remain enabled. Google Mobile Ads starts after the first screen appears, and banners load only after a root view controller is available."
 )
 
 
@@ -118,7 +120,7 @@ def main():
                     "type": "appStoreVersionLocalizations",
                     "id": loc_id,
                     "attributes": {
-                        "whatsNew": "起動時の安定性を改善し、広告表示まわりを調整しました。",
+                        "whatsNew": "iPadで見やすい画面に調整し、課金導線を削除しました。広告表示は維持しています。",
                     },
                 }
             })

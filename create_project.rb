@@ -38,7 +38,6 @@ add_sources(app_group, target, [
   'NewsViews.swift',
   'SettingsView.swift',
   'BannerAdView.swift',
-  'AdRemovalManager.swift',
   'JikenTheme.swift',
 ])
 

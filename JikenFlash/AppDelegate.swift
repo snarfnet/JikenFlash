@@ -1,4 +1,3 @@
-import AppTrackingTransparency
 import GoogleMobileAds
 import SwiftUI
 
@@ -15,19 +14,11 @@ final class AdMobStartup: ObservableObject {
     @Published private(set) var isReady = false
     private var didStart = false
 
-    func requestTrackingAndStartAds() async {
+    func startAdsAfterLaunch() async {
         guard !didStart else { return }
         didStart = true
 
-        try? await Task.sleep(for: .milliseconds(700))
-
-        if #available(iOS 14.5, *) {
-            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-                ATTrackingManager.requestTrackingAuthorization { _ in
-                    continuation.resume()
-                }
-            }
-        }
+        try? await Task.sleep(for: .seconds(1))
 
         MobileAds.shared.start { [weak self] _ in
             Task { @MainActor in

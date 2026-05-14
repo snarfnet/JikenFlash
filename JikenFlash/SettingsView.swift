@@ -1,54 +1,46 @@
-import StoreKit
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var adManager: AdRemovalManager
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             ZStack {
                 JFBackground()
+
                 ScrollView {
                     VStack(spacing: 16) {
                         Image("jiken-saved")
                             .resizable()
                             .scaledToFill()
-                            .frame(height: 190)
-                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            .frame(height: 180)
+                            .clipped()
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                         SettingsPanel(
-                            icon: adManager.isAdFree ? "checkmark.seal.fill" : "xmark.seal.fill",
-                            title: adManager.isAdFree ? "広告は非表示です" : "広告を非表示",
-                            text: "ニュース一覧を広く使いたい場合は、広告を外せます。",
-                            tint: adManager.isAdFree ? .green : .jfRed
-                        ) {
-                            if !adManager.isAdFree {
-                                PurchaseButton(title: adManager.product.map { "広告を非表示 - \($0.displayPrice)" } ?? "広告を非表示") {
-                                    Task { await adManager.purchase() }
-                                }
-                            }
-                        }
+                            icon: "megaphone.fill",
+                            title: "無料で利用できます",
+                            text: "事件速報は広告で運営しています。アプリ内課金はありません。",
+                            tint: .jfCyan
+                        )
 
-                        SettingsPanel(icon: "tram.fill", title: "鉄道タブ", text: "鉄道関連の速報を専用タブで確認します。", tint: .jfCyan) {
-                            UnlockButton(isUnlocked: adManager.isTrainUnlocked, product: adManager.trainProduct) {
-                                Task { await adManager.purchaseTrain() }
-                            }
-                        }
+                        SettingsPanel(
+                            icon: "shield.checkered",
+                            title: "速報の見方",
+                            text: "気になる速報を開くと、要点・確認先・安全メモを整理して確認できます。",
+                            tint: .jfRed
+                        )
 
-                        SettingsPanel(icon: "waveform.path.ecg", title: "地震タブ", text: "地震速報と防災メモを専用タブで確認します。", tint: .jfAmber) {
-                            UnlockButton(isUnlocked: adManager.isEarthquakeUnlocked, product: adManager.earthquakeProduct) {
-                                Task { await adManager.purchaseEarthquake() }
-                            }
-                        }
-
-                        Button("購入を復元") {
-                            Task { await adManager.restore() }
-                        }
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundColor(.jfSubtext)
+                        SettingsPanel(
+                            icon: "location.fill",
+                            title: "近くの速報",
+                            text: "位置情報を許可すると、近い可能性がある速報を優先して見られます。",
+                            tint: .jfAmber
+                        )
                     }
                     .padding(18)
+                    .frame(maxWidth: 620)
+                    .frame(maxWidth: .infinity)
                 }
             }
             .navigationTitle("設定")
@@ -63,73 +55,31 @@ struct SettingsView: View {
     }
 }
 
-private struct SettingsPanel<Content: View>: View {
+private struct SettingsPanel: View {
     let icon: String
     let title: String
     let text: String
     let tint: Color
-    @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                Image(systemName: icon)
-                    .foregroundColor(tint)
-                    .frame(width: 34, height: 34)
-                    .background(tint.opacity(0.14))
-                    .clipShape(Circle())
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(title)
-                        .font(.system(size: 17, weight: .black, design: .rounded))
-                        .foregroundColor(.jfText)
-                    Text(text)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundColor(.jfSubtext)
-                }
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(tint)
+                .frame(width: 34, height: 34)
+                .background(tint.opacity(0.14))
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .foregroundColor(.jfText)
+                Text(text)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundColor(.jfSubtext)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            content
         }
-        .glassCard()
-    }
-}
-
-private struct PurchaseButton: View {
-    let title: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .frame(maxWidth: .infinity)
-        }
-        .font(.system(size: 15, weight: .black, design: .rounded))
-        .foregroundColor(.jfText)
-        .padding(.vertical, 13)
-        .background(Color.jfRed)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-}
-
-private struct UnlockButton: View {
-    let isUnlocked: Bool
-    let product: Product?
-    let action: () -> Void
-
-    var body: some View {
-        if isUnlocked {
-            Label("解放済み", systemImage: "checkmark.circle.fill")
-                .font(.system(size: 14, weight: .black, design: .rounded))
-                .foregroundColor(.green)
-        } else {
-            Button(action: action) {
-                Text(product.map { "解放 - \($0.displayPrice)" } ?? "解放")
-                    .frame(maxWidth: .infinity)
-            }
-            .font(.system(size: 15, weight: .black, design: .rounded))
-            .foregroundColor(.jfText)
-            .padding(.vertical, 13)
-            .background(Color.white.opacity(0.12))
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard(padding: 14)
     }
 }
