@@ -15,6 +15,7 @@ target.build_configurations.each do |config|
   config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
   config.build_settings['CODE_SIGN_STYLE'] = 'Automatic'
   config.build_settings['INFOPLIST_FILE'] = 'JikenFlash/Info.plist'
+  config.build_settings['TARGETED_DEVICE_FAMILY'] = '1,2'
   config.build_settings['ASSETCATALOG_COMPILER_APPICON_NAME'] = 'AppIcon'
   config.build_settings['ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME'] = 'AccentColor'
 end

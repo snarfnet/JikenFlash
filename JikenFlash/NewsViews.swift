@@ -166,6 +166,8 @@ struct AlertDetailView: View {
                     .padding(.bottom, 20)
             }
             .padding(embedded ? 22 : 18)
+            .frame(maxWidth: embedded ? .infinity : 430)
+            .frame(maxWidth: .infinity)
         }
         .background(JFBackground())
     }

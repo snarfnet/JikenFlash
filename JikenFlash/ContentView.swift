@@ -43,38 +43,41 @@ struct ContentView: View {
         NavigationStack {
             ZStack {
                 JFBackground()
-                ScrollView {
-                    VStack(spacing: 18) {
-                        HeaderHero(showSettings: { showSettings = true })
-                        NativeValueStrip()
-                        CategoryCarousel(selected: $selectedCategory)
-                        SearchBar(text: $searchText)
+                GeometryReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            HeaderHero(showSettings: { showSettings = true }, availableHeight: proxy.size.height)
+                            CategoryCarousel(selected: $selectedCategory)
+                            SearchBar(text: $searchText)
 
-                        if adMobStartup.isReady {
-                            AdBannerView()
-                                .frame(height: 54)
-                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                .padding(.horizontal, 16)
-                        }
+                            if adMobStartup.isReady {
+                                AdBannerView()
+                                    .frame(height: 54)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                    .padding(.horizontal, 16)
+                            }
 
-                        if newsService.isLoading && newsService.items.isEmpty {
-                            LoadingPanel()
-                        } else {
-                            ForEach(filteredItems) { item in
-                                NewsCardView(
-                                    item: item,
-                                    distanceKm: distanceForItem(item),
-                                    isSaved: savedStore.isSaved(item),
-                                    onSave: { savedStore.toggle(item) },
-                                    onOpen: { selectedItem = item }
-                                )
-                                .padding(.horizontal, 16)
+                            if newsService.isLoading && newsService.items.isEmpty {
+                                LoadingPanel()
+                            } else {
+                                ForEach(filteredItems) { item in
+                                    NewsCardView(
+                                        item: item,
+                                        distanceKm: distanceForItem(item),
+                                        isSaved: savedStore.isSaved(item),
+                                        onSave: { savedStore.toggle(item) },
+                                        onOpen: { selectedItem = item }
+                                    )
+                                    .padding(.horizontal, 16)
+                                }
                             }
                         }
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: 430)
+                        .frame(maxWidth: .infinity)
                     }
-                    .padding(.vertical, 14)
+                    .refreshable { await newsService.fetchNews(category: selectedCategory) }
                 }
-                .refreshable { await newsService.fetchNews(category: selectedCategory) }
             }
             .navigationBarHidden(true)
         }
@@ -176,13 +179,14 @@ struct ContentView: View {
 
 private struct HeaderHero: View {
     let showSettings: () -> Void
+    var availableHeight: CGFloat = 780
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             Image("jiken-newsroom")
                 .resizable()
                 .scaledToFill()
-                .frame(height: 260)
+                .frame(height: min(232, max(196, availableHeight * 0.26)))
                 .clipped()
             LinearGradient(colors: [.black.opacity(0.05), .black.opacity(0.82)], startPoint: .top, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 10) {
@@ -201,16 +205,19 @@ private struct HeaderHero: View {
                     }
                 }
                 Text("事件速報")
-                    .font(.system(size: 42, weight: .black, design: .rounded))
+                    .font(.system(size: 36, weight: .black, design: .rounded))
                     .foregroundColor(.jfText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
                 Text("ニュースを開く前に、要点・距離・安全メモを整理します。")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundColor(.jfSubtext)
+                    .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(20)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .padding(.horizontal, 16)
     }
 }

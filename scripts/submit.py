@@ -12,10 +12,10 @@ REVIEW_CONTACT = {
     "contactPhone": "+81 80-2368-9194",
 }
 REVIEW_NOTES = (
-    "Guideline 4: The iPad layout has been simplified so the list has more room and the detail screen opens only after selecting an item. "
-    "The settings screen now contains only essential information.\n"
-    "Guideline 2.1(b): All in-app purchase code and purchase buttons have been removed. "
-    "This build is a free, ad-supported app and does not unlock paid features.\n"
+    "Guideline 4: The iPhone layout has been optimized for iPhone 17 Pro Max by centering the main content, limiting the readable width, "
+    "and reducing the hero height so the first screen uses the available resolution cleanly. The iPad layout remains simplified.\n"
+    "Guideline 2.1(b): All in-app purchase code and purchase buttons have been removed. Any remaining App Store Connect in-app purchase products "
+    "are removed before this review submission is created. This build is a free, ad-supported app and does not unlock paid features.\n"
     "Ads remain enabled. Google Mobile Ads starts after the first screen appears, and banners load only after a root view controller is available."
 )
 
@@ -42,6 +42,28 @@ def wait_for_build(app_id):
         print("Target build not found, using latest valid build")
         return latest_valid_id
     raise RuntimeError("No valid processed build found")
+
+
+def delete_in_app_purchases(app_id):
+    payload = api("GET", f"/apps/{app_id}/inAppPurchasesV2?limit=200")
+    items = payload.get("data", [])
+    if not items:
+        print("No in-app purchases found")
+        return
+
+    for item in items:
+        iap_id = item["id"]
+        attrs = item.get("attributes", {})
+        product_id = attrs.get("productId") or attrs.get("referenceName") or iap_id
+        try:
+            api("DELETE", f"/v2/inAppPurchases/{iap_id}")
+            print(f"Deleted in-app purchase {product_id}")
+        except RuntimeError as e:
+            message = str(e)
+            if "404" in message:
+                print(f"In-app purchase {product_id} already deleted")
+            else:
+                raise RuntimeError(f"Could not delete in-app purchase {product_id}: {e}")
 
 
 def main():
@@ -120,7 +142,7 @@ def main():
                     "type": "appStoreVersionLocalizations",
                     "id": loc_id,
                     "attributes": {
-                        "whatsNew": "iPadで見やすい画面に調整し、課金導線を削除しました。広告表示は維持しています。",
+                        "whatsNew": "iPhone 17 Pro Maxで見やすい画面に調整し、課金導線を削除しました。広告表示は維持しています。",
                     },
                 }
             })
@@ -150,6 +172,8 @@ def main():
     if canceled:
         print("Waiting for cancellation to propagate...")
         time.sleep(10)
+
+    delete_in_app_purchases(app_id)
 
     for attempt in range(3):
         try:

@@ -39,7 +39,7 @@ struct SettingsView: View {
                         )
                     }
                     .padding(18)
-                    .frame(maxWidth: 620)
+                    .frame(maxWidth: 430)
                     .frame(maxWidth: .infinity)
                 }
             }

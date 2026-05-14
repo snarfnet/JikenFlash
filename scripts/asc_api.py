@@ -10,6 +10,7 @@ ISSUER_ID = os.environ.get("ASC_ISSUER_ID", "2be0734f-943a-4d61-9dc9-5d9045c46fe
 KEY_PATH = Path.home() / ".appstoreconnect" / "private_keys" / f"AuthKey_{KEY_ID}.p8"
 BUNDLE_ID = "com.tokyonasu.JikenFlash"
 BASE_URL = "https://api.appstoreconnect.apple.com/v1"
+BASE_HOST = "https://api.appstoreconnect.apple.com"
 _TOKEN = None
 _TOKEN_EXPIRES_AT = 0
 
@@ -33,7 +34,8 @@ def headers():
 
 
 def api(method, path, **kwargs):
-    response = requests.request(method, f"{BASE_URL}{path}", headers=headers(), **kwargs)
+    url = f"{BASE_HOST}{path}" if path.startswith("/v") else f"{BASE_URL}{path}"
+    response = requests.request(method, url, headers=headers(), **kwargs)
     if not response.ok:
         raise RuntimeError(f"{method} {path} failed: {response.status_code} {response.text}")
     return response.json() if response.text else {}
