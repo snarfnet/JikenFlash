@@ -82,53 +82,73 @@ struct ContentView: View {
     }
 
     private var iPadLayout: some View {
-        NavigationSplitView {
+        GeometryReader { proxy in
+            let isWide = proxy.size.width >= 980
+            let sidebarWidth: CGFloat = isWide ? 300 : 260
+            let listWidth: CGFloat? = isWide ? min(430, proxy.size.width * 0.36) : nil
+
             ZStack {
                 JFBackground()
-                VStack(alignment: .leading, spacing: 16) {
-                    HeaderMini(showSettings: { showSettings = true })
-                    CategorySidebar(selected: $selectedCategory)
-                    NativeValueStrip(compact: true)
-                    Spacer()
-                }
-                .padding(18)
-            }
-            .navigationBarHidden(true)
-        } content: {
-            ZStack {
-                JFBackground()
-                ScrollView {
-                    VStack(spacing: 16) {
-                        SearchBar(text: $searchText)
-                        if !adManager.isAdFree && adMobStartup.isReady {
-                            AdBannerView()
-                                .frame(height: 54)
-                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                .padding(.horizontal, 16)
-                        }
-                        ForEach(filteredItems) { item in
-                            NewsCardView(
-                                item: item,
-                                distanceKm: distanceForItem(item),
-                                isSaved: savedStore.isSaved(item),
-                                onSave: { savedStore.toggle(item) },
-                                onOpen: { selectedItem = item }
-                            )
-                            .padding(.horizontal, 16)
-                        }
+                HStack(spacing: 0) {
+                    iPadSidebar
+                        .frame(width: sidebarWidth)
+                    Divider().overlay(Color.white.opacity(0.08))
+                    iPadList
+                        .frame(width: listWidth)
+                    if isWide {
+                        Divider().overlay(Color.white.opacity(0.08))
+                        iPadDetail
                     }
-                    .padding(.vertical, 18)
                 }
             }
-            .navigationTitle("速報一覧")
-        } detail: {
-            ZStack {
-                JFBackground()
-                if let item = selectedItem ?? filteredItems.first {
-                    AlertDetailView(item: item, isSaved: savedStore.isSaved(item), onSave: { savedStore.toggle(item) }, embedded: true)
-                } else {
-                    EmptyDetailPanel()
+        }
+        .navigationBarHidden(true)
+    }
+
+    private var iPadSidebar: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HeaderMini(showSettings: { showSettings = true })
+            CategorySidebar(selected: $selectedCategory)
+            NativeValueStrip(compact: true)
+            Spacer()
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 20)
+    }
+
+    private var iPadList: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                SearchBar(text: $searchText)
+                if !adManager.isAdFree && adMobStartup.isReady {
+                    AdBannerView()
+                        .frame(height: 54)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .padding(.horizontal, 16)
                 }
+                ForEach(filteredItems) { item in
+                    NewsCardView(
+                        item: item,
+                        distanceKm: distanceForItem(item),
+                        isSaved: savedStore.isSaved(item),
+                        onSave: { savedStore.toggle(item) },
+                        onOpen: { selectedItem = item }
+                    )
+                    .padding(.horizontal, 16)
+                }
+            }
+            .padding(.vertical, 18)
+        }
+        .refreshable { await newsService.fetchNews(category: selectedCategory) }
+    }
+
+    private var iPadDetail: some View {
+        ZStack {
+            JFBackground()
+            if let item = selectedItem ?? filteredItems.first {
+                AlertDetailView(item: item, isSaved: savedStore.isSaved(item), onSave: { savedStore.toggle(item) }, embedded: true)
+            } else {
+                EmptyDetailPanel()
             }
         }
     }
@@ -214,13 +234,18 @@ private struct HeaderMini: View {
             Text("事件速報")
                 .font(.system(size: 30, weight: .black, design: .rounded))
                 .foregroundColor(.jfText)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
             Text("速報を整理して、安全な判断に変える")
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .foregroundColor(.jfSubtext)
+                .fixedSize(horizontal: false, vertical: true)
             Button(action: showSettings) {
                 Label("設定", systemImage: "gearshape.fill")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundColor(.jfText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
                     .background(Color.white.opacity(0.1))
@@ -257,9 +282,13 @@ private struct ValueCard: View {
             Text(title)
                 .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundColor(.jfSubtext)
+                .lineLimit(1)
+                .minimumScaleFactor(0.78)
             Text(value)
                 .font(.system(size: 15, weight: .black, design: .rounded))
                 .foregroundColor(.jfText)
+                .lineLimit(2)
+                .minimumScaleFactor(0.78)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(padding: 12)
@@ -310,6 +339,8 @@ private struct CategoryChip: View {
             HStack(spacing: 7) {
                 Image(systemName: category.icon)
                 Text(category.label)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
                 if wide { Spacer() }
             }
             .font(.system(size: 14, weight: .bold, design: .rounded))

@@ -13,6 +13,8 @@ struct NewsCardView: View {
                     HStack(spacing: 7) {
                         Image(systemName: item.category.icon)
                         Text(item.category.label)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.78)
                     }
                     .font(.system(size: 12, weight: .black, design: .rounded))
                     .foregroundColor(Color(hex: item.category.tintHex))
@@ -25,6 +27,8 @@ struct NewsCardView: View {
                         Text(String(format: "%.0fkm圏", distanceKm))
                             .font(.system(size: 12, weight: .black, design: .rounded))
                             .foregroundColor(.jfCyan)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.78)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
                             .background(Color.jfCyan.opacity(0.15))
@@ -56,10 +60,13 @@ struct NewsCardView: View {
                 HStack(spacing: 10) {
                     MetaPill(icon: "clock.fill", text: item.timeAgo)
                     MetaPill(icon: "newspaper.fill", text: item.sources.first ?? item.source)
+                        .layoutPriority(1)
                     Spacer()
                     Label("分析", systemImage: "arrow.right.circle.fill")
                         .font(.system(size: 13, weight: .black, design: .rounded))
                         .foregroundColor(.jfRed)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
         }
         .glassCard()
@@ -83,6 +90,7 @@ private struct MetaPill: View {
             Image(systemName: icon)
             Text(text)
                 .lineLimit(1)
+                .truncationMode(.tail)
         }
         .font(.system(size: 11, weight: .bold, design: .rounded))
         .foregroundColor(.jfSubtext)
@@ -172,6 +180,8 @@ private struct DetailHero: View {
                 Text(item.riskLabel)
                     .font(.system(size: 13, weight: .black, design: .rounded))
                     .foregroundColor(.jfText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 7)
                     .background(Color(hex: item.category.tintHex))
@@ -179,6 +189,8 @@ private struct DetailHero: View {
                 Text(item.category.label)
                     .font(.system(size: 13, weight: .black, design: .rounded))
                     .foregroundColor(Color(hex: item.category.tintHex))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
                 Spacer()
             }
 
@@ -212,6 +224,8 @@ private struct ActionBar: View {
         }
         .font(.system(size: 14, weight: .black, design: .rounded))
         .foregroundColor(.jfText)
+        .lineLimit(1)
+        .minimumScaleFactor(0.78)
         .buttonStyle(.borderedProminent)
         .tint(.jfRed)
     }
